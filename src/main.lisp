@@ -43,6 +43,13 @@
 (defun pos-scalar (op pos scalar)
   (pos-apply op pos (make-pos scalar scalar scalar)))
 
+(defun pos-print (pos)
+  (format t "x: ~a - y: ~a - scale: ~a~%"
+	  (pos-x pos)
+	  (pos-y pos)
+	  (pos-scale pos))
+  pos)
+
 (defun scale-apply (fn pos)
   (make-pos (funcall fn (pos-scale pos))
 	    (pos-x pos)
@@ -66,6 +73,15 @@
 
 ;; (0.001 0.4201 -0.2091)
 
+(defun pos-i (si pos1 pos2)
+  (let ((sid (/ (- si (pos-scale pos1))
+		(- (pos-scale pos2) (pos-scale pos1)))))
+    ;;(format t "sid: ~a~%" sid)
+    ;;(format t "d-x: ~a~%" (* sid (- (pos-x pos2) (pos-x pos1))))
+    (make-pos si
+	      (+ (pos-x pos1) (* sid (- (pos-x pos2) (pos-x pos1))))
+	      (+ (pos-y pos1) (* sid (- (pos-y pos2) (pos-y pos1)))))))
+
 (defun make-anim (name width height iters frames pos-start pos-end)
   (ensure-directories-exist name)
   (format t "making a ~a frame animation~%" frames)
@@ -75,18 +91,20 @@
 			       (format nil "~d"
 				       (length (format nil "~d" frames)))
 			       ",'0d.png"))
-	 (change (pos-scalar #'/ (pos-apply #'- pos-end pos-start) frames))
-	 (scale-change (expt (* (pos-scale pos-start)
-				(pos-scale pos-end))
+	 (scale-change (expt (/ (pos-scale pos-end) (pos-scale pos-start))
 			     (/ 1 (- frames 1)))))
     (dotimes (currentf frames)
       (format t "progress: ~2$%~%" (* 100.0 (/ currentf frames)))
       (make-im (concatenate 'string name (format nil fmt-str currentf))
 	       width height iters
-	       (pos-apply #'+ pos-start
-			  (scale-apply
-			   #'(lambda (_) (expt scale-change currentf))
-			   (pos-scalar #'* change currentf)))
+	       (pos-print
+		(pos-i (* (expt scale-change currentf)
+			  (pos-scale pos-start))
+		       pos-start pos-end))
 	       :progress nil))))
 	       
-  
+
+;; 1 -1.5 -0.5
+;; 0.001 -1.405 -0.0005
+
+;; 0.001 -1.449 -0.0005
