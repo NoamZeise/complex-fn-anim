@@ -35,10 +35,24 @@
 (defstruct (pos (:constructor make-pos (scale x y)))
   scale x y)
 
-(defun make-im (name w h iters pos)
+(defun pos-apply (op pos1 pos2)
+  (make-pos (funcall op (pos-scale pos1) (pos-scale pos2))
+	    (funcall op (pos-x pos1) (pos-x pos2))
+	    (funcall op (pos-y pos1) (pos-y pos2))))
+
+(defun pos-scalar (op pos scalar)
+  (pos-apply op pos (make-pos scalar scalar scalar)))
+
+(defun scale-apply (fn pos)
+  (make-pos (funcall fn (pos-scale pos))
+	    (pos-x pos)
+	    (pos-y pos)))
+
+(defun make-im (name w h iters pos &key (progress t))
   (let ((image (im:make-rgb-image w h)))
     (dotimes (x w)
-      (format t "progress: ~2$%~%" (* 100.0 (/ x w)))
+      (if progress
+	  (format t "progress: ~2$%~%" (* 100.0 (/ x w))))
       (dotimes (y h)
 	(setf (im:image-pixel image x y)
 	      (mandelbrot-pixel x y w h
@@ -46,12 +60,33 @@
 				(pos-x pos)
 				(pos-y pos)
 				iters))))
-    (im:write-png image name)))
+    ;;redirect stdout so write-png doesnt print 
+    (with-open-stream (*standard-output* (make-broadcast-stream))
+      (im:write-png image name))))
 
 ;; (0.001 0.4201 -0.2091)
 
 (defun make-anim (name width height iters frames pos-start pos-end)
   (ensure-directories-exist name)
   (format t "making a ~a frame animation~%" frames)
-  (make-im (concatenate 'string name "Start.png") width height iters pos-start)
-  (make-im (concatenate 'string name "End.png") width height iters pos-end))
+  (let (
+	;;ensure output files have consistent number of digits
+	 (fmt-str (concatenate 'string "~"
+			       (format nil "~d"
+				       (length (format nil "~d" frames)))
+			       ",'0d.png"))
+	 (change (pos-scalar #'/ (pos-apply #'- pos-end pos-start) frames))
+	 (scale-change (expt (* (pos-scale pos-start)
+				(pos-scale pos-end))
+			     (/ 1 (- frames 1)))))
+    (dotimes (currentf frames)
+      (format t "progress: ~2$%~%" (* 100.0 (/ currentf frames)))
+      (make-im (concatenate 'string name (format nil fmt-str currentf))
+	       width height iters
+	       (pos-apply #'+ pos-start
+			  (scale-apply
+			   #'(lambda (_) (expt scale-change currentf))
+			   (pos-scalar #'* change currentf)))
+	       :progress nil))))
+	       
+  
