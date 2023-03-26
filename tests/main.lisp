@@ -1,8 +1,8 @@
-(defpackage cl-images/tests/main
+(defpackage canim/tests/main
   (:use :cl
-        :cl-images
+        :canim
         :rove))
-(in-package :cl-images/tests/main)
+(in-package :canim/tests/main)
 
 ;; NOTE: To run this test file, execute `(asdf:test-system :cl-images)' in your Lisp.
 

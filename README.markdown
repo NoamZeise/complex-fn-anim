@@ -1,5 +1,1 @@
-# Cl-Images
-
-## Usage
-
-## Installation
+# canim - complex function animations and images (WIP)

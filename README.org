@@ -1,5 +1,0 @@
-* Cl-Images 
-
-** Usage
-
-** Installation

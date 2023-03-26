@@ -1,110 +1,81 @@
-(defpackage cl-images
-  (:nicknames :myim)
-  (:use :cl)
-  (:local-nicknames (:im :imago))
-  (:export #:make-im
-	   #:pos
-	   #:make-pos
-	   #:make-anim))
-(in-package :cl-images)
+(in-package :canim)
 
-(defun lim (x max) (if (> x max) max x))
-
-(defun gr-2 (c)
-  (> (+ (expt (realpart c) 2)
-	(expt (imagpart c) 2))
-     4))
-
-(defun mandelbrot (c iter-max)
-  (let* ((z 0) (c (coerce c '(complex double-float)))
-	 (iters
-	   (dotimes (i iter-max i)
-	     (setf z (+ (* z z) c))
-	     (if (gr-2 z) (return i)))))
-    (/ iters iter-max)))
-
-(defun correct (pos size scale off)
-  (+ (* (/ pos size) scale) off))
-
-(defun mandelbrot-pixel (x y w h scale xPos yPos iter-max)
-  (let ((p (floor (* 255 (mandelbrot (complex (correct x w scale xPos)
-					      (correct y h scale yPos))
-				     iter-max)))))
-    (im:make-color p p p)))
-
-(defstruct (pos (:constructor make-pos (scale x y)))
-  scale x y)
-
-(defun pos-apply (op pos1 pos2)
-  (make-pos (funcall op (pos-scale pos1) (pos-scale pos2))
-	    (funcall op (pos-x pos1) (pos-x pos2))
-	    (funcall op (pos-y pos1) (pos-y pos2))))
-
-(defun pos-scalar (op pos scalar)
-  (pos-apply op pos (make-pos scalar scalar scalar)))
-
-(defun pos-print (pos)
-  (format t "x: ~a - y: ~a - scale: ~a~%"
-	  (pos-x pos)
-	  (pos-y pos)
-	  (pos-scale pos))
-  pos)
-
-(defun scale-apply (fn pos)
-  (make-pos (funcall fn (pos-scale pos))
-	    (pos-x pos)
-	    (pos-y pos)))
-
-(defun make-im (name w h iters pos &key (progress t))
+(defun make-im (name w h pos &key
+			       (show-progress t)
+			       (pixel-fn #'mandelbrot-pixel))
   (let ((image (im:make-rgb-image w h)))
     (dotimes (x w)
-      (if progress
+      (if show-progress
 	  (format t "progress: ~2$%~%" (* 100.0 (/ x w))))
       (dotimes (y h)
 	(setf (im:image-pixel image x y)
-	      (mandelbrot-pixel x y w h
-				(pos-scale pos)
-				(pos-x pos)
-				(pos-y pos)
-				iters))))
+	      (funcall pixel-fn x y w h pos))))
     ;;redirect stdout so write-png doesnt print 
     (with-open-stream (*standard-output* (make-broadcast-stream))
       (im:write-png image name))))
 
-;; (0.001 0.4201 -0.2091)
-
-(defun pos-i (si pos1 pos2)
-  (let ((sid (/ (- si (pos-scale pos1))
+(defun pos-i (current-scale pos1 pos2)
+  (let ((scale-factor (/ (- current-scale (pos-scale pos1))
 		(- (pos-scale pos2) (pos-scale pos1)))))
-    ;;(format t "sid: ~a~%" sid)
-    ;;(format t "d-x: ~a~%" (* sid (- (pos-x pos2) (pos-x pos1))))
-    (make-pos si
-	      (+ (pos-x pos1) (* sid (- (pos-x pos2) (pos-x pos1))))
-	      (+ (pos-y pos1) (* sid (- (pos-y pos2) (pos-y pos1)))))))
+    (let ((p (pos-apply #'+
+			pos1
+			(scalar-pos-apply #'*
+					  scale-factor
+					  (pos-apply #'- pos2 pos1)))))
+      (setf (pos-scale p) current-scale)
+      p)))
 
-(defun make-anim (name width height iters frames pos-start pos-end)
-  (ensure-directories-exist name)
+(defun make-anim (folder width height frames pos-start pos-end
+		  &key
+		    (show-progress t)
+		    (pixel-fn #'mandelbrot-pixel))
+  (ensure-directories-exist folder)
   (format t "making a ~a frame animation~%" frames)
   (let (
 	;;ensure output files have consistent number of digits
-	 (fmt-str (concatenate 'string "~"
-			       (format nil "~d"
-				       (length (format nil "~d" frames)))
-			       ",'0d.png"))
-	 (scale-change (expt (/ (pos-scale pos-end) (pos-scale pos-start))
-			     (/ 1 (- frames 1)))))
+	(fmt-str (concatenate 'string "~"
+			      (format nil "~d"
+				      (length (format nil "~d" (- frames 1))))
+			      ",'0d.png"))
+
+	;;to calc scale changes so that zoom appears to be smooth across scaling-
+	;;this formula gives the property that the relative change in scale
+	;;is constant no matter how far zoomed in or out:
+	;; start-scale * (scale-end / scale-start)^(current-frame/total-frames)
+	
+	;;here we precompute what we can and take it ^current-frame each frame
+	(scale-change (expt (/ (pos-scale pos-end) (pos-scale pos-start))
+			    (/ 1 (- frames 1))))
+	(pos-delta (scalar-pos-apply #'*
+				     (/ 1 frames)
+				     (pos-apply #'- pos-end pos-start))))
+			      
     (dotimes (currentf frames)
-      (format t "progress: ~2$%~%" (* 100.0 (/ currentf frames)))
-      (make-im (concatenate 'string name (format nil fmt-str currentf))
-	       width height iters
-	       (pos-print
-		(pos-i (* (expt scale-change currentf)
-			  (pos-scale pos-start))
-		       pos-start pos-end))
-	       :progress nil))))
-	       
+      (if show-progress
+	  (format t "progress: ~2$%~%" (* 100.0 (/ currentf frames))))
+      (make-im (concatenate 'string folder (format nil fmt-str currentf))
+	       width height
+	       ;; start-scale * scale-change^(current-frame)
+	       (pos-print (if (eql (pos-scale pos-delta) 0)
+		   (pos-apply #'+ pos-start
+			      (scalar-pos-apply #'*
+						(/ currentf frames)
+						pos-delta))
+		   (pos-i (* (expt scale-change currentf)
+			     (pos-scale pos-start))
+			  pos-start pos-end)))
+	       :show-progress nil
+	       :pixel-fn pixel-fn))))
+
+
+
+
+;; 0.001 0.4201 -0.2091
 
 ;; 1 -1.5 -0.5
 ;; 0.001 -1.405 -0.0005
 
 ;; 0.001 -1.449 -0.0005
+
+
+;; little one  - 0.005 -1.45 -0.0025
