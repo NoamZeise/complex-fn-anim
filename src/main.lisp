@@ -1,18 +1,35 @@
 (in-package :canim)
 
+(defun pixel-to-graph-space (component im-dim scale offset)
+  (+ (* (/ component im-dim) scale) offset))
+
 (defun make-im (name w h pos &key
 			       (show-progress t)
 			       (pixel-fn #'mandelbrot-pixel))
+  "create a png with name of a certain size at pos. 
+Position is from bottom left of the image.
+pixel-fn must take arguments (x y scale),
+where x and y are the coordinates of the point
+and scale is the scale of the image 
+(for making accuracy adjustments based on scale)."
+  (if (eql (pos-scale pos) 0)
+      (error "make-im: supplied pos had a scale of 0"))
   (let ((image (im:make-rgb-image w h)))
     (dotimes (x w)
       (if show-progress
 	  (format t "progress: ~2$%~%" (* 100.0 (/ x w))))
       (dotimes (y h)
 	(setf (im:image-pixel image x y)
-	      (funcall pixel-fn x y w h pos))))
+	      (funcall pixel-fn
+		       ;; x
+		       (pixel-to-graph-space x w (pos-scale pos) (pos-x pos))
+		       ;; y
+		       (pixel-to-graph-space y h (pos-scale pos) (pos-y pos))
+		       (pos-scale pos)))))
     ;;redirect stdout so write-png doesnt print 
     (with-open-stream (*standard-output* (make-broadcast-stream))
       (im:write-png image name))))
+
 
 (defun pos-i (current-scale pos1 pos2)
   (let ((scale-factor (/ (- current-scale (pos-scale pos1))
@@ -29,7 +46,15 @@
 		  &key
 		    (show-progress t)
 		    (pixel-fn #'mandelbrot-pixel))
+  "creates a series of pngs labled iii.png for i in 0 to frames. 
+The supplied folder will be created if it does not exist. 
+by default the pixel-fn used is mandelbrot. 
+This function has the args (x y scale) for coordinate points, and will be called 
+for each pixel in each animation."
   (ensure-directories-exist folder)
+  (if (or (eql (pos-scale pos-start) 0)
+	  (eql (pos-scale pos-end) 0))
+      (error "make-anim: one of the supplied positions had a scale of 0"))
   (format t "making a ~a frame animation~%" frames)
   (let (
 	;;ensure output files have consistent number of digits
@@ -56,14 +81,14 @@
       (make-im (concatenate 'string folder (format nil fmt-str currentf))
 	       width height
 	       ;; start-scale * scale-change^(current-frame)
-	       (pos-print (if (eql (pos-scale pos-delta) 0)
+	       (if (eql (pos-scale pos-delta) 0)
 		   (pos-apply #'+ pos-start
 			      (scalar-pos-apply #'*
 						currentf
 						pos-delta))
 		   (pos-i (* (expt scale-change currentf)
 			     (pos-scale pos-start))
-			  pos-start pos-end)))
+			  pos-start pos-end))
 	       :show-progress nil
 	       :pixel-fn pixel-fn))))
 

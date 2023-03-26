@@ -22,10 +22,7 @@
 (defun iter-scale-default (scale)
   (round (/ 30 (sqrt scale))))
 
-(defun mandelbrot-pixel (x y w h pos &key (iter-fn #'iter-scale-default))
-  (let ((p (floor (* 255 (mandelbrot (complex (correct x w (pos-scale pos)
-						       (pos-x pos))
-					      (correct y h (pos-scale pos)
-						       (pos-y pos)))
-				     (funcall iter-fn (pos-scale pos)))))))
+(defun mandelbrot-pixel (x y scale &key (iter-fn #'iter-scale-default))
+  (let ((p (floor (* 255 (mandelbrot (complex x y)
+				     (funcall iter-fn scale))))))
     (im:make-color p p p)))
