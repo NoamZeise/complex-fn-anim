@@ -21,3 +21,7 @@
 	  (pos-y pos)
 	  (pos-scale pos))
   pos)
+
+
+(defun make-colour (r g b a)
+  (im:make-color r g b a))

@@ -21,7 +21,7 @@
 (defun mandelbrot-pixel (x y scale &key (iter-fn #'iter-scale-default))
   (let ((p (floor (* 255 (mandelbrot (complex x y)
 				     (funcall iter-fn scale))))))
-    (im:make-color p p p)))
+    (make-colour p p p 255)))
 
 
 

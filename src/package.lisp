@@ -6,5 +6,6 @@
 	   #:pos-scale
 	   #:pos-x
 	   #:pos-y
+	   #:make-colour
 	   #:make-im
 	   #:make-anim))
