@@ -19,7 +19,7 @@ Now you can use the library
 
 ## creating images
 
-![alone mandelbrot](https://github.com/NoamZeise/complex-fn-anim/tree/master/demos/images/alone.png)
+![alone mandelbrot](https://github.com/NoamZeise/complex-fn-anim/blob/master/demos/images/alone.png?raw=true)
 
 
 By default images are created using mandelbrot, supply your own functions with the `:pixel-fn` arg.
@@ -43,7 +43,7 @@ To make an image you can call
 
 ## creating an animation
 
-![mandelbrot gif](https://github.com/NoamZeise/complex-fn-anim/tree/master/demos/videos/mandelbrot-1.gif)
+![mandelbrot gif](https://github.com/NoamZeise/complex-fn-anim/blob/master/demos/videos/mandelbrot-1.gif?raw=true)
 
 
 To make an animation you can call
@@ -60,8 +60,7 @@ Which will output a series of files in the `anim-img-folder` folder with names
 ### using a custom pixel function example
 Taken from demo/redgrad.gif
 
-![red grad gif](https://github.com/NoamZeise/complex-fn-anim/tree/master/demos/videos/redgrad.gif)
-
+![red grad gif](https://github.com/NoamZeise/complex-fn-anim/blob/master/demos/videos/redgrad.gif?raw=true)
 This was made using
 
 ```lisp
