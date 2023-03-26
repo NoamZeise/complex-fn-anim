@@ -46,9 +46,9 @@
 	;;here we precompute what we can and take it ^current-frame each frame
 	(scale-change (expt (/ (pos-scale pos-end) (pos-scale pos-start))
 			    (/ 1 (- frames 1))))
-	(pos-delta (scalar-pos-apply #'*
-				     (/ 1 frames)
-				     (pos-apply #'- pos-end pos-start))))
+	(pos-delta (pos-print (scalar-pos-apply #'*
+				     (/ 1 (- frames 1))
+				     (pos-apply #'- pos-end pos-start)))))
 			      
     (dotimes (currentf frames)
       (if show-progress
@@ -59,7 +59,7 @@
 	       (pos-print (if (eql (pos-scale pos-delta) 0)
 		   (pos-apply #'+ pos-start
 			      (scalar-pos-apply #'*
-						(/ currentf frames)
+						currentf
 						pos-delta))
 		   (pos-i (* (expt scale-change currentf)
 			     (pos-scale pos-start))
