@@ -58,9 +58,8 @@ Which will output a series of files in the `anim-img-folder` folder with names
 `framexx.png`.
 
 ### using a custom pixel function example
-Taken from demo/redgrad.gif
-
 ![red grad gif](https://github.com/NoamZeise/complex-fn-anim/blob/master/demos/videos/redgrad.gif?raw=true)
+
 This was made using
 
 ```lisp
