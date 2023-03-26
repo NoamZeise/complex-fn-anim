@@ -43,7 +43,7 @@ To make an image you can call
 
 ## creating an animation
 
-![mandelbrot gif](https://github.com/NoamZeise/complex-fn-anim/blob/master/demos/videos/right-hq.gif?raw=true)
+![mandelbrot recursive](https://github.com/NoamZeise/complex-fn-anim/blob/master/demos/videos/recursive.gif?raw=true)
 
 
 To make an animation you can call
@@ -77,3 +77,8 @@ Then converted to a gif using imagemagick:
 ```
 $ convert --delay 2 build/myanim/*.png redgrad.gif
 ```
+
+![mandelbrot gif](https://github.com/NoamZeise/complex-fn-anim/blob/master/demos/videos/right-hq.gif?raw=true)
+
+![mandelbrot gif](https://github.com/NoamZeise/complex-fn-anim/blob/master/demos/videos/mandelbrot-1.gif?raw=true)
+

@@ -16,13 +16,12 @@
 
 ;; gives decent iter amounts for a consistent detail across scale sizes
 (defun iter-scale-default (scale)
-  (round (/ 30 (sqrt scale))))
+  (round (+ (/ 50 (sqrt (* 0.25 scale))) 80)))
 
 (defun mandelbrot-pixel (x y scale &key (iter-fn #'iter-scale-default))
   (let ((p (floor (* 255 (mandelbrot (complex x y)
 				     (funcall iter-fn scale))))))
     (make-colour p p p 255)))
-
 
 
 
@@ -37,3 +36,11 @@
 
 ;; 1 0.2 -0.5
 ;; 0.0001 0.25045 -0.00005
+
+
+;;start 3 -2.2 -1.5
+;;end 0.054 -1.794 -0.027
+
+
+;;start 2.95 -2.18 -1.475
+;;end 0.0118 -1.6341 -0.0059
