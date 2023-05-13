@@ -1,5 +1,4 @@
 (in-package :canim)
-;; julia set functions -WIP
 
 (defun expt-nothrow (x pow)
   "exponent function that returns zero in the case of float overflow"
@@ -9,7 +8,8 @@
       0.0d0)))
 
 (defun compexpt (c pow)
-  "bring the imag and real part of a complex number to a given power and sum"
+  "bring the imag and real part of a complex number to a given power and sum.
+Returns zero in the case of a float overflow."
   (handler-case
       (+ (expt-nothrow (realpart c) pow) (expt-nothrow (imagpart c) pow))
     (floating-point-overflow ()
@@ -38,12 +38,28 @@
 	     (p (floor (* 255 (julia z n c R (iter-scale-default scale))))))
 	(make-colour p p p 255))))
 
+(defstruct julia-params
+  (n 2)
+  (c (complex 0 -0.8))
+  (R 2))
+
+(defun julia-params-interpolate (fn start end progress)
+  (+ (funcall fn start) (* (- (funcall fn end) (funcall fn start)) progress)))
+
+(defun julia-pixel-dynamic (start end)
+  #'(lambda (anim-progress)
+      (julia-pixel (julia-params-interpolate #'julia-params-n start end anim-progress)
+		   (julia-params-interpolate #'julia-params-c start end anim-progress)
+		   (julia-params-interpolate #'julia-params-r start end anim-progress))))
+		    
+     
 
 (defun mandelbrot-pixel (x y scale &key (iter-fn #'iter-scale-default))
   "given a position and scaling value, generate a color to indicate whether this position is in the mandelbrot
 set or not."
-  (let ((p (floor (* 255 (julia (complex 0 0) 2 (complex x y) 2
-				     (funcall iter-fn scale))))))
+  (let ((p (floor (* 255 (julia
+			  (complex 0 0) 2 (complex x y) 2
+			  (funcall iter-fn scale))))))
     (make-colour p p p 255)))
 
 ;;some mandelbrot values:

@@ -36,12 +36,14 @@ and scale is the scale of the image
   (if show-progress
       (format t "progress: 100.0%~%image saved~%")))
 
+(defun get-scale-progress (current-scale pos-start pos-end)
+  (/ (- current-scale (pos-scale pos-start))
+		(- (pos-scale pos-end) (pos-scale pos-start))))
 
 (defun correct-pos-with-scale (current-scale pos1 pos2)
   ;; get percent progress towards final scale and use
   ;; that for calculating the current pos
-  (let ((scale-factor (/ (- current-scale (pos-scale pos1))
-		(- (pos-scale pos2) (pos-scale pos1)))))
+  (let ((scale-factor (get-scale-progress current-scale pos1 pos2)))
     (let ((p (pos-apply #'+
 			pos1
 			(pos-apply-scalar #'*
@@ -53,16 +55,20 @@ and scale is the scale of the image
 (defun make-anim (folder width height frames pos-start pos-end
 		  &key
 		    (show-progress t)
+		    (pixel-meta-fn nil)
 		    (pixel-fn #'mandelbrot-pixel))
   "creates a series of pngs labled iii.png for i in 0 to frames. 
 The supplied folder will be created if it does not exist. 
 by default the pixel-fn used is mandelbrot. 
 This function has the args (x y scale) for coordinate points, and will be called 
-for each pixel in each animation."
+for each pixel in each animation.
+If pixel-meta-fn is true, then pixel-fn should be a function that takes in progress of
+the animation from 0.0 to 1.0, and returns a function that takes (x y scale) as before"
   (ensure-directories-exist folder)
   (if (or (eql (pos-scale pos-start) 0)
 	  (eql (pos-scale pos-end) 0))
       (error "make-anim: one of the supplied positions had a scale of 0"))
+  (if (< frames 1) (error "tried to make animation with less that 1 frame"))
   (format t "making a ~a frame animation~%" frames)
   (let (
 	;;ensure output files have consistent number of digits
@@ -87,8 +93,7 @@ for each pixel in each animation."
 	  (format t "progress: ~2$%~%" (* 100.0 (/ currentf frames))))
       (make-im (concatenate 'string folder (format nil fmt-str currentf))
 	       width height
-	       ;; start-scale * scale-change^(current-frame)
-	       (if (eql (pos-scale pos-delta) 0)
+	       (if (equalp (pos-scale pos-delta) 0)
 		   (pos-apply #'+ pos-start
 			      (pos-apply-scalar #'*
 						currentf
@@ -97,6 +102,6 @@ for each pixel in each animation."
 			     (pos-scale pos-start))
 			  pos-start pos-end))
 	       :show-progress nil
-	       :pixel-fn pixel-fn)))
+	       :pixel-fn (if pixel-meta-fn (funcall pixel-fn (/ currentf frames)) pixel-fn))))
   (if show-progress
       (format t "progress: 100.0%~%animation saved~%")))
