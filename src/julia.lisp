@@ -32,7 +32,7 @@ Returns zero in the case of a float overflow."
      iter-max))
 
 (defun julia-pixel (n c R)
-  "return a function that will give you a julia set pixel color"
+  "return a function that will give you a julia set pixel function taking (x y scale)."
   #'(lambda (x y scale)
       (let* ((z (complex x y))
 	     (p (floor (* 255 (julia z n c R (iter-scale-default scale))))))
