@@ -24,12 +24,10 @@ and scale is the scale of the image
 	  (format t "progress: ~2$%~%" (* 100.0 (/ x w))))
       (dotimes (y h)
 	(setf (im:image-pixel image x y)
-	      (funcall pixel-fn
-		       ;; x
-		       (pixel-to-graph-space x w (pos-scale pos) (pos-x pos))
-		       ;; y
-		       (pixel-to-graph-space y h (pos-scale pos) (pos-y pos))
-		       (pos-scale pos)))))
+	      (flet ((to-graph (position size pos-fn)
+		       (pixel-to-graph-space position size (pos-scale pos) (funcall pos-fn pos))))
+		  (funcall pixel-fn (to-graph x w #'pos-x) (to-graph y h #'pos-y)
+			   (pos-scale pos))))))
     ;;redirect stdout so write-png doesnt print 
     (with-open-stream (*standard-output* (make-broadcast-stream))
       (im:write-png image name)))
@@ -57,18 +55,18 @@ and scale is the scale of the image
 		    (show-progress t)
 		    (pixel-meta-fn nil)
 		    (pixel-fn #'mandelbrot-pixel))
-  "creates a series of pngs labled iii.png for i in 0 to frames. 
+  "creates a series of pngs labled ii.png for i in 0 to frames. 
 The supplied folder will be created if it does not exist. 
-by default the pixel-fn used is mandelbrot. 
+By default the pixel-fn used is mandelbrot. 
 This function has the args (x y scale) for coordinate points, and will be called 
 for each pixel in each animation.
 If pixel-meta-fn is true, then pixel-fn should be a function that takes in progress of
-the animation from 0.0 to 1.0, and returns a function that takes (x y scale) as before"
+the animation from 0.0 to 1.0, and returns a function that takes (x y scale)"
   (ensure-directories-exist folder)
   (if (or (eql (pos-scale pos-start) 0)
 	  (eql (pos-scale pos-end) 0))
       (error "make-anim: one of the supplied positions had a scale of 0"))
-  (if (< frames 1) (error "tried to make animation with less that 1 frame"))
+  (if (< frames 2) (error "tried to make animation with less that 2 frame"))
   (format t "making a ~a frame animation~%" frames)
   (let (
 	;;ensure output files have consistent number of digits
@@ -102,6 +100,8 @@ the animation from 0.0 to 1.0, and returns a function that takes (x y scale) as 
 			     (pos-scale pos-start))
 			  pos-start pos-end))
 	       :show-progress nil
-	       :pixel-fn (if pixel-meta-fn (funcall pixel-fn (/ currentf frames)) pixel-fn))))
+	       :pixel-fn (if pixel-meta-fn
+			     (funcall pixel-fn (/ currentf frames))
+			     pixel-fn))))
   (if show-progress
       (format t "progress: 100.0%~%animation saved~%")))

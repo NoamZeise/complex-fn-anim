@@ -81,4 +81,3 @@ $ convert --delay 2 build/myanim/*.png redgrad.gif
 ![mandelbrot gif](https://github.com/NoamZeise/complex-fn-anim/blob/master/demos/videos/right-hq.gif?raw=true)
 
 ![mandelbrot gif](https://github.com/NoamZeise/complex-fn-anim/blob/master/demos/videos/mandelbrot-1.gif?raw=true)
-

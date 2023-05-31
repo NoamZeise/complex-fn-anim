@@ -1,5 +1,9 @@
 (in-package :canim)
 
+(defun iter-scale-default (scale)
+  "returns an amount of iterations for how detailed the julia set needs to be based on the scale of the image"
+  (round (+ (/ 50 (sqrt (* 0.25 scale))) 80)))
+
 (defun expt-nothrow (x pow)
   "exponent function that returns zero in the case of float overflow"
   (handler-case (expt x pow)
@@ -27,10 +31,6 @@ Returns zero in the case of a float overflow."
 	 (setf z (complex temp (+ (* z-size (sin inner-trig)) (imagpart c))))))
      iter-max))
 
-(defun iter-scale-default (scale)
-  "returns an amount of iterations for how detailed the julia set needs to be based on the scale of the image"
-  (round (+ (/ 50 (sqrt (* 0.25 scale))) 80)))
-
 (defun julia-pixel (n c R)
   "return a function that will give you a julia set pixel color"
   #'(lambda (x y scale)
@@ -43,38 +43,18 @@ Returns zero in the case of a float overflow."
   (c (complex 0 -0.8))
   (R 2))
 
-(defun julia-params-interpolate (fn start end progress)
-  (+ (funcall fn start) (* (- (funcall fn end) (funcall fn start)) progress)))
-
 (defun julia-pixel-dynamic (start end)
   #'(lambda (anim-progress)
-      (julia-pixel (julia-params-interpolate #'julia-params-n start end anim-progress)
-		   (julia-params-interpolate #'julia-params-c start end anim-progress)
-		   (julia-params-interpolate #'julia-params-r start end anim-progress))))
-		    
-     
+      (flet ((interp (fn)
+	       (+ (funcall fn start) (* (- (funcall fn end) (funcall fn start)) anim-progress))))
+	(julia-pixel (interp #'julia-params-n)
+		     (interp #'julia-params-c)
+		     (interp #'julia-params-r))))) 
 
-(defun mandelbrot-pixel (x y scale &key (iter-fn #'iter-scale-default))
+(defun mandelbrot-pixel (x y scale)
   "given a position and scaling value, generate a color to indicate whether this position is in the mandelbrot
 set or not."
   (let ((p (floor (* 255 (julia
 			  (complex 0 0) 2 (complex x y) 2
-			  (funcall iter-fn scale))))))
+			  (iter-scale-default scale))))))
     (make-colour p p p 255)))
-
-;;some mandelbrot values:
-;; 0.001 0.4201 -0.2091
-
-;; 1 -1.5 -0.5
-;; 0.001 -1.405 -0.0005
-
-;; 0.001 -1.449 -0.0005
-
-;; little one  - 0.005 -1.45 -0.0025
-
-;; 1 0.2 -0.5
-;; 0.0001 0.25045 -0.00005
-
-
-;;start 3 -2.2 -1.5
-;;end 0.054 -1.794 -0.027

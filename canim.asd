@@ -8,8 +8,8 @@
                 :components
 		((:file "package")
 		 (:file "pos" :depends-on ("package"))
-		 (:file "mandelbrot" :depends-on ("pos"))
-		 (:file "main" :depends-on ("pos" "mandelbrot")))))
+		 (:file "julia" :depends-on ("pos"))
+		 (:file "main" :depends-on ("pos" "julia")))))
   :description "A lib for creating images and animations of complex functions - complex animations (canim)"
   :in-order-to ((test-op (test-op "cl-images/tests"))))
 
