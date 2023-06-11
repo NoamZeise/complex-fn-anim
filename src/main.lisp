@@ -62,9 +62,9 @@ The supplied folder will be created if it does not exist.
 By default the pixel-fn used is mandelbrot. 
 This function has the args (x y scale) for coordinate points, and will be called 
 for each pixel in each animation.
-If a pixel-meta-fn is supplied, where it is a function that takes in a float for the 
-progress of the animation from 0.0 to 1.0, and returns a function that takes 
-(x y scale) to give a different pixel fn for each frame of the animation."
+a pixel-meta-fn can be supplied. It is a function that takes in a float for the 
+progress of the animation from 0.0 to 1.0, and returns a function that is a 
+valid pixel function."
   
   (ensure-directories-exist folder)
   
