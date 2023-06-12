@@ -1,3 +1,5 @@
+(in-package :common-lisp-user)
+
 (defpackage canim
   (:use :cl)
   (:local-nicknames (:im :imago))
