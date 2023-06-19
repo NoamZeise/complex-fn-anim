@@ -2,20 +2,26 @@
 
 # Usage
 
-Requires a common lisp implimentation (tested with sbcl) and quicklisp.
+The executable will read a single lisp form, which you can use to generate images or 
+animations.
 
-evaluate the asd file in your repl
+To build, requires a common lisp implimentation (tested with sbcl) and quicklisp.
+run make to create an exported binary.
+
+### from a repl
+
+Evaluate the asd file in your repl
 
 ```lisp
 (load "canim.asd")
 ```
 
-load the package with quicklisp, which will install any dependancies for your
+Load the package with quicklisp, which will install any dependancies for your
 ```lisp
 (ql:quickload "canim")
 ```
 
-Now you can use the library
+Now you can use the library functions
 
 ## creating images
 

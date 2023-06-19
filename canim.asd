@@ -9,8 +9,14 @@
 		((:file "package")
 		 (:file "pos" :depends-on ("package"))
 		 (:file "julia" :depends-on ("pos"))
-		 (:file "main" :depends-on ("julia")))))
+		 (:file "make" :depends-on ("julia"))
+		 (:file "main" :depends-on ("make")))))
   :description "A lib for creating images and animations of complex functions - complex animations (canim)"
+  ;; build
+  :build-operation "program-op"
+  :build-pathname "build/canim"
+  :entry-point "canim::main"
+  ;; testing
   :in-order-to ((test-op (test-op "canim/tests"))))
 
 
