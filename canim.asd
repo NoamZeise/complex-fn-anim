@@ -9,7 +9,7 @@
 		((:file "package")
 		 (:file "pos" :depends-on ("package"))
 		 (:file "mandelbrot" :depends-on ("pos"))
-		 (:file "example-functions" :depends-on ("pos"))
+		 (:file "graphing-fns" :depends-on ("pos"))
 		 (:file "main" :depends-on ("pos" "mandelbrot")))))
   :description "A lib for creating images and animations of complex functions - complex animations (canim)"
   :in-order-to ((test-op (test-op "cl-images/tests"))))
