@@ -23,7 +23,7 @@ and scale is the scale of the image
       (if show-progress
 	  (format t "progress: ~2$%~%" (* 100.0 (/ x w))))
       (dotimes (y h)
-	(setf (im:image-pixel image x y)
+	(setf (im:image-pixel image x (- (- h y) 1))
 	      (funcall pixel-fn
 		       ;; x
 		       (pixel-to-graph-space x w (pos-scale pos) (pos-x pos))
