@@ -9,6 +9,7 @@
 		((:file "package")
 		 (:file "pos" :depends-on ("package"))
 		 (:file "julia" :depends-on ("pos"))
+		 (:file "graphing-fns" :depends-on ("pos"))
 		 (:file "make" :depends-on ("julia"))
 		 (:file "main" :depends-on ("make")))))
   :description "A lib for creating images and animations of complex functions - complex animations (canim)"
