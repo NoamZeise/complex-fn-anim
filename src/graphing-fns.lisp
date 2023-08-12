@@ -30,9 +30,9 @@
    (lambda (x y) (funcall fn (if flipped y x)))
    (lambda (x y) (if flipped x y))))
 
-(defun graph-pixel (fn-list)
+(defun graph-pixel (fn-list &key (invert nil))
   (lambda (x y scale) 
     (let ((intensity 1))
       (loop for fn in fn-list do (setf intensity (* intensity (funcall fn x y scale))))
-      (setf intensity (min 255 (floor (* 255 intensity))))
+      (setf intensity (min 255 (floor (* 255 (if invert (- 1 intensity) intensity)))))
       (make-colour intensity intensity intensity 255))))
