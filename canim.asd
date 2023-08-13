@@ -1,3 +1,4 @@
+
 (in-package :asdf-user)
 (defsystem "canim"
   :version "0.1.0"
@@ -12,7 +13,7 @@
 		 (:file "graphing-fns" :depends-on ("pos"))
 		 (:file "make" :depends-on ("julia"))
 		 (:file "main" :depends-on ("make")))))
-  :description "A lib for creating images and animations of complex functions - complex animations (canim)"
+  :description "A lib for creating images and animations of functions"
   ;; build
   :build-operation "program-op"
   :build-pathname "build/canim"

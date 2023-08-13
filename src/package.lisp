@@ -17,5 +17,10 @@
 	   #:make-julia-params
 	   #:julia-pixel
 	   #:julia-pixel-dynamic
+	   #:mandelbrot-pixel
 
-	   #:mandelbrot-pixel))
+	   #:left=right
+	   #:fn=c
+	   #:fn=y
+	   #:graph-pixel
+	   #:graph-anim))
